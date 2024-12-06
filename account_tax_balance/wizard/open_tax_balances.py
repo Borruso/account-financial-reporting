@@ -1,7 +1,7 @@
 # Copyright 2016 Lorenzo Battistini - Agile Business Group
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
-from odoo import _, api, fields, models
+from odoo import api, fields, models
 
 
 class WizardOpenTaxBalances(models.TransientModel):
@@ -40,7 +40,7 @@ class WizardOpenTaxBalances(models.TransientModel):
 
     def open_taxes(self):
         self.ensure_one()
-        action = self.env.ref("account_tax_balance.action_tax_balances_tree")
+        action = self.env.ref("account_tax_balance.action_tax_balances_list")
         act_vals = action.sudo().read()[0]
         # override action name doesn't work in v12 or v10
         # we need to build a dynamic action on main keys
@@ -64,12 +64,14 @@ class WizardOpenTaxBalances(models.TransientModel):
         date_format = lang and lang.date_format or "%m/%d/%Y"
         infos = {
             "name": vals["name"],
-            "target": _(self.target_move),
+            "target": self.env._(self.target_move),
             "from": self.from_date.strftime(date_format),
             "to": self.to_date.strftime(date_format),
         }
         # name of action which is displayed in breacrumb
-        vals["name"] = _("%(name)s: %(target)s from %(from)s to %(to)s") % infos
+        vals["name"] = (
+            self.env._("%(name)s: %(target)s from %(from)s to %(to)s") % infos
+        )
         multi_cpny_grp = self.env.ref("base.group_multi_company")
         if multi_cpny_grp in self.env.user.groups_id:
             company_names = self.company_ids.mapped("name")
